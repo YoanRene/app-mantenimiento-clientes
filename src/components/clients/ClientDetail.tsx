@@ -54,46 +54,46 @@ const ClientDetail: React.FC = () => {
     return (
         <Paper elevation={3} sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-                Client Details: {client.firstName} {client.lastName}
+                Client Details: {client.nombre} {client.apellidos}
             </Typography>
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Identification:</Typography>
-                    <Typography>{client.identification}</Typography>
+                    <Typography>{client.identificacion}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Mobile Phone:</Typography>
-                    <Typography>{client.mobilePhone}</Typography>
+                    <Typography>{client.celular}</Typography>
                 </Grid>
-                {client.otherPhone && (  // Conditionally render otherPhone
+                {client.otroTelefono && (  // Conditionally render otherPhone
                     <Grid item xs={12} sm={6}>
                         <Typography variant="subtitle1">Other Phone:</Typography>
-                        <Typography>{client.otherPhone}</Typography>
+                        <Typography>{client.otroTelefono}</Typography>
                     </Grid>
                 )}
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Address:</Typography>
-                    <Typography>{client.address}</Typography>
+                    <Typography>{client.direccion}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Birth Date:</Typography>
-                    <Typography>{client.birthDate}</Typography>
+                    <Typography>{client.fNacimiento}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Affiliation Date:</Typography>
-                    <Typography>{client.affiliationDate}</Typography>
+                    <Typography>{client.fAfiliacion}</Typography>
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Gender:</Typography>
-                    <Typography>{client.gender}</Typography>
+                    <Typography>{client.sexo}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="subtitle1">Personal Note:</Typography>
-                    <Typography>{client.personalNote}</Typography>
+                    <Typography>{client.resennaPersonal}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="subtitle1">Interests:</Typography>
-                    <Typography>{client.interests.join(', ')}</Typography>
+                    <Typography>{client.interesFK.join(', ')}</Typography>
                 </Grid>
             </Grid>
         </Paper>

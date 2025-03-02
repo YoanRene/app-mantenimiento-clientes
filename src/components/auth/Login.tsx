@@ -1,11 +1,14 @@
 // src/components/auth/Login.tsx
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Container, Typography, Alert, Checkbox, FormControlLabel } from '@mui/material';
+import { TextField, Button, Container, Typography, Alert, Checkbox, FormControlLabel,InputAdornment, IconButton,  } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import config from '../../config';
+import config_ from '../../config';
+import Visibility from '@mui/icons-material/Visibility';       // Import eye icons
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-const API_BASE_URL = config.API_BASE_URL;
+
+const API_BASE_URL = config_.API_BASE_URL;
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState('');
@@ -13,7 +16,7 @@ const Login: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
-
+    const [showPassword, setShowPassword] = useState(false); // State for password visibility
 
     useEffect(() => {
         const savedUsername = localStorage.getItem('rememberedUsername');
@@ -73,48 +76,71 @@ const Login: React.FC = () => {
         }
     };
 
+    const handleClickShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const handleMouseDownPassword = (event: React.MouseEvent) => {
+        event.preventDefault();  // Prevent focus from being lost
+    };
+
     return (
         <Container maxWidth="xs">
-            <Typography variant="h4" align="center" gutterBottom>
+        <Typography variant="h4" align="center" gutterBottom>
+            Login
+        </Typography>
+        <form onSubmit={handleSubmit}>
+            {error && <Alert severity="error">{error}</Alert>}
+            <TextField
+                fullWidth
+                label="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                margin="normal"
+                required
+            />
+            <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? 'text' : 'password'} // Toggle input type
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                margin="normal"
+                required
+                variant="outlined" // Use OutlinedInput or TextField with variant="outlined"
+                InputProps={{ // Add InputProps for the adornment
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton
+                                aria-label="toggle password visibility"
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                            >
+                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+            />
+            <FormControlLabel
+                control={
+                    <Checkbox
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        color="primary"
+                    />
+                }
+                label="Remember Me"
+            />
+            <Button type="submit" variant="contained" color="primary" fullWidth>
                 Login
+            </Button>
+            <Typography align="center" sx={{ mt: 2 }}>
+                Don't have an account? <a href="/register">Register</a>
             </Typography>
-            <form onSubmit={handleSubmit}>
-                {error && <Alert severity="error">{error}</Alert>}
-                <TextField
-                    fullWidth
-                    label="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    margin="normal"
-                    required
-                />
-                <TextField
-                    fullWidth
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    margin="normal"
-                    required
-                />
-                <FormControlLabel
-                    control={
-                        <Checkbox
-                            checked={rememberMe}
-                            onChange={(e) => setRememberMe(e.target.checked)}
-                            color="primary"
-                        />
-                    }
-                    label="Remember Me"
-                />
-                <Button type="submit" variant="contained" color="primary" fullWidth>
-                    Login
-                </Button>
-                <Typography align="center" sx={{ mt: 2 }}>
-                    Don't have an account? <a href="/register">Register</a>
-                </Typography>
-            </form>
-        </Container>
+        </form>
+    </Container>
     );
 };
 

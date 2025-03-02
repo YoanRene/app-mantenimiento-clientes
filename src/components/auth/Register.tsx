@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Alert } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import config from '../../config';
+import config_ from '../../config';
 
 
-const API_BASE_URL = config.API_BASE_URL;
+const API_BASE_URL = config_.API_BASE_URL;
 
 const Register: React.FC = () => {
     const [username, setUsername] = useState('');

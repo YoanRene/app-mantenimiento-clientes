@@ -29,17 +29,17 @@ const ClientForm: React.FC<ClientFormProps> = () => {
     const [error, setError] = useState<string | null>(null);
 
   const [clientData, setClientData] = useState<Client>({
-        id: '', // Important to initialize id
-        firstName: '',
-        lastName: '',
-        identification: '',
-        mobilePhone: '',
-        address: '',
-        birthDate: '',
-        affiliationDate: '',
-        gender: 'Male',
-        personalNote: '',
-        interests: [],
+        usuarioId: '', // Important to initialize id
+        nombre: '',
+        apellidos: '',
+        identificacion: '',
+        celular: '',
+        direccion: '',
+        fNacimiento: '',
+        fAfiliacion: '',
+        sexo: 'Male',
+        resennaPersonal: '',
+        interesFK: [],
     });
 
     useEffect(() => {
@@ -75,7 +75,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
 
   const handleInterestChange = (event: SelectChangeEvent<string[]>) => {
     const { value } = event.target as { value: string[] };
-    setClientData({ ...clientData, interests: value });
+    setClientData({ ...clientData, interesFK: value });
   };
 
   const handleGenderChange = (event: SelectChangeEvent<'Male' | 'Female'>) => {
@@ -117,7 +117,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="First Name"
             name="firstName"
-            value={clientData.firstName}
+            value={clientData.nombre}
             onChange={handleChange}
             required
           />
@@ -127,7 +127,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="Last Name"
             name="lastName"
-            value={clientData.lastName}
+            value={clientData.apellidos}
             onChange={handleChange}
             required
           />
@@ -137,7 +137,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="Identification"
             name="identification"
-            value={clientData.identification}
+            value={clientData.identificacion}
             onChange={handleChange}
             required
           />
@@ -147,7 +147,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="Mobile Phone"
             name="mobilePhone"
-            value={clientData.mobilePhone}
+            value={clientData.celular}
             onChange={handleChange}
             required
           />
@@ -157,7 +157,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="Other Phone"
             name="otherPhone"
-            value={clientData.otherPhone || ''}  // Handle optional field
+            value={clientData.otroTelefono || ''}  // Handle optional field
             onChange={handleChange}
           />
         </Grid>
@@ -166,7 +166,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             fullWidth
             label="Address"
             name="address"
-            value={clientData.address}
+            value={clientData.direccion}
             onChange={handleChange}
             required
           />
@@ -177,7 +177,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             label="Birth Date"
             name="birthDate"
             type="date"
-            value={clientData.birthDate}
+            value={clientData.fNacimiento}
             onChange={handleChange}
             InputLabelProps={{
               shrink: true,
@@ -191,7 +191,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             label="Affiliation Date"
             name="affiliationDate"
             type="date"
-            value={clientData.affiliationDate}
+            value={clientData.fAfiliacion}
             onChange={handleChange}
             InputLabelProps={{
               shrink: true,
@@ -204,7 +204,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             <InputLabel>Gender</InputLabel>
             <Select
               name="gender"
-              value={clientData.gender}
+              value={clientData.sexo}
               onChange={handleGenderChange}
               required
             >
@@ -220,7 +220,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             name="personalNote"
             multiline
             rows={4}
-            value={clientData.personalNote}
+            value={clientData.resennaPersonal}
             onChange={handleChange}
           />
         </Grid>
@@ -230,7 +230,7 @@ const ClientForm: React.FC<ClientFormProps> = () => {
             <Select
               multiple
               name="interests"
-              value={clientData.interests}
+              value={clientData.interesFK}
               onChange={handleInterestChange}
               renderValue={(selected) => (selected as string[]).join(', ')}
             >

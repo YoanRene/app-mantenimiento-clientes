@@ -61,7 +61,7 @@ const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
         try {
             const updatedClient = await clientService.updateClient(id, client);
             setClients(prevClients =>
-                prevClients.map(c => (c.id === id ? updatedClient : c))
+                prevClients.map(c => (c.usuarioId === id ? updatedClient : c))
             );
              // Indicate success
         } catch (err) {
@@ -77,7 +77,7 @@ const ClientProvider: React.FC<ClientProviderProps> = ({ children }) => {
         setError(null);
         try {
             await clientService.deleteClient(id);
-            setClients(prevClients => prevClients.filter(c => c.id !== id));
+            setClients(prevClients => prevClients.filter(c => c.usuarioId !== id));
             // Indicate success
         } catch (err) {
             setError(err as Error);

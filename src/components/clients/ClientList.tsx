@@ -20,11 +20,12 @@ import ClientFilter from './ClientFilter';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import getUserId from '../utils';
 
 
 const ClientList: React.FC = () => {
   const { clients, loading, error, fetchClients, deleteClient } = useClientContext();
-    const [filters, setFilters] = useState<ClientFilters>({});
+    const [filters, setFilters] = useState<ClientFilters>({usuarioId:getUserId()!, nombre: '', identificacion:''});
 
   useEffect(() => {
     fetchClients(filters);  // Fetch clients when component mounts or filters change
@@ -70,19 +71,19 @@ const ClientList: React.FC = () => {
         </TableHead>
         <TableBody>
           {clients.map((client) => (
-            <TableRow key={client.id}>
-              <TableCell>{client.firstName}</TableCell>
-              <TableCell>{client.lastName}</TableCell>
-              <TableCell>{client.identification}</TableCell>
-              <TableCell>{client.mobilePhone}</TableCell>
+            <TableRow key={client.usuarioId}>
+              <TableCell>{client.nombre}</TableCell>
+              <TableCell>{client.apellidos}</TableCell>
+              <TableCell>{client.identificacion}</TableCell>
+              <TableCell>{client.celular}</TableCell>
               <TableCell>
-                <IconButton component={Link} to={`/clients/${client.id}`}>
+                <IconButton component={Link} to={`/clients/${client.usuarioId}`}>
                   <VisibilityIcon />
                 </IconButton>
-                <IconButton component={Link} to={`/clients/edit/${client.id}`}>
+                <IconButton component={Link} to={`/clients/edit/${client.usuarioId}`}>
                  <EditIcon/>
                 </IconButton>
-                <IconButton onClick={() => handleDelete(client.id)}>
+                <IconButton onClick={() => handleDelete(client.usuarioId)}>
                   <DeleteIcon />
                 </IconButton>
               </TableCell>

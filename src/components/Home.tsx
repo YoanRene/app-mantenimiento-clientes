@@ -9,7 +9,7 @@ const Home: React.FC = () => {
 
   return (
     <Container>
-        <Typography variant='h4' align='center' sx={{mb:3}}>Welcome!</Typography>
+        <Typography variant='h2' align='center' sx={{mb:3}}>Welcome!</Typography>
         <Button
             variant="contained"
             color="primary"

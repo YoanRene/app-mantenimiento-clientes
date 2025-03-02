@@ -1,9 +1,9 @@
 // src/services/clientService.ts
 import axios from 'axios';
 import { Client, ClientFilters } from '../types/Client';
-import config from '../config';
+import config_ from '../config';
 
-const API_BASE_URL = config.API_BASE_URL; // Corrected base URL
+const API_BASE_URL = config_.API_BASE_URL; // Corrected base URL
 
 // Function to get the authentication token
 const getAuthToken = () => {
@@ -26,16 +26,7 @@ axios.interceptors.request.use(
 const clientService = {
     getAllClients: async (filters?: ClientFilters): Promise<Client[]> => {
         try {
-            const params = new URLSearchParams();
-            if (filters) {
-                for (const key in filters) {
-                    if (filters[key as keyof ClientFilters]) {
-                        params.append(key, filters[key as keyof ClientFilters]!);
-                    }
-                }
-            }
-
-            const response = await axios.get(`${API_BASE_URL}/api/Client`, { params }); // Use correct endpoint
+            const response = await axios.post(`${API_BASE_URL}/api/Cliente/Listado`,  filters ); // Use correct endpoint
             return response.data;
         } catch (error) {
             console.error("Error fetching clients:", error);
@@ -45,7 +36,7 @@ const clientService = {
 
     getClientById: async (id: string): Promise<Client> => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/Client/${id}`); // Use correct endpoint
+            const response = await axios.get(`${API_BASE_URL}/api/Cliente/${id}`); // Use correct endpoint
             return response.data;
         } catch (error) {
             console.error(`Error getting client with id ${id}:`, error);
@@ -56,8 +47,8 @@ const clientService = {
       createClient: async (client: Client): Promise<Client> => {
         try {
             // Remove the manually added ID, let the server handle it
-            const { id, ...clientDataWithoutId } = client;
-            const response = await axios.post(`${API_BASE_URL}/api/Client`, clientDataWithoutId);
+            const { usuarioId, ...clientDataWithoutId } = client;
+            const response = await axios.post(`${API_BASE_URL}/api/Cliente`, clientDataWithoutId);
             return response.data;
         } catch (error) {
             console.error("Error creating client:", error);
@@ -68,8 +59,8 @@ const clientService = {
     updateClient: async (id: string, client: Client): Promise<Client> => {
         try {
              // Remove the manually added ID, let the server handle it
-            const { id: clientId, ...clientDataWithoutId } = client;
-            const response = await axios.put(`${API_BASE_URL}/api/Client/${id}`, clientDataWithoutId); // Use correct endpoint
+            const { usuarioId: clientId, ...clientDataWithoutId } = client;
+            const response = await axios.put(`${API_BASE_URL}/api/Cliente/${id}`, clientDataWithoutId); // Use correct endpoint
             return response.data;
         } catch (error) {
             console.error(`Error updating client with id ${id}:`, error);
@@ -79,7 +70,7 @@ const clientService = {
 
     deleteClient: async (id: string): Promise<void> => {
         try {
-            await axios.delete(`${API_BASE_URL}/api/Client/${id}`); // Use correct endpoint
+            await axios.delete(`${API_BASE_URL}/api/Cliente/${id}`); // Use correct endpoint
         } catch (error) {
             console.error(`Error deleting client with id ${id}:`, error);
             throw error;

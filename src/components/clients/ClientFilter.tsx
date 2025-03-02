@@ -1,14 +1,21 @@
 import React, { useState } from 'react';
 import { TextField, Button, Grid } from '@mui/material';
 import { ClientFilters } from '../../types/Client';
+import getUserId from '../utils';
 
 
 interface ClientFilterProps {
     onApplyFilters: (filters: ClientFilters) => void;
 }
 
+
+
 const ClientFilter: React.FC<ClientFilterProps> = ({ onApplyFilters }) => {
-    const [filters, setFilters] = useState<ClientFilters>({});
+    const [filters, setFilters] = useState<ClientFilters>({
+        usuarioId: getUserId()!,
+        nombre: '',
+        identificacion: ''
+    });
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
@@ -23,8 +30,8 @@ const ClientFilter: React.FC<ClientFilterProps> = ({ onApplyFilters }) => {
     };
 
     const handleClear = () => {
-        setFilters({});
-        onApplyFilters({}); // Notify parent to clear filters
+        setFilters({usuarioId:getUserId()!, nombre: '', identificacion: ''});
+        onApplyFilters({usuarioId:getUserId()!, nombre: '', identificacion: ''}); // Notify parent to clear filters
     }
 
     return (
@@ -34,16 +41,16 @@ const ClientFilter: React.FC<ClientFilterProps> = ({ onApplyFilters }) => {
                     fullWidth
                     label="First Name"
                     name="firstName"
-                    value={filters.firstName || ''}
+                    value={filters.nombre || ''}
                     onChange={handleChange}
                 />
             </Grid>
             <Grid item xs={12} sm={3}>
                 <TextField
                     fullWidth
-                    label="Last Name"
-                    name="lastName"
-                    value={filters.lastName || ''}
+                    label="User ID"
+                    name="userId"
+                    value={filters.usuarioId || ''}
                     onChange={handleChange}
                 />
             </Grid>
@@ -52,7 +59,7 @@ const ClientFilter: React.FC<ClientFilterProps> = ({ onApplyFilters }) => {
                     fullWidth
                     label="Identification"
                     name="identification"
-                    value={filters.identification || ''}
+                    value={filters.identificacion || ''}
                     onChange={handleChange}
                 />
             </Grid>
