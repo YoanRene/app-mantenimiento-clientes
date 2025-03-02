@@ -1,55 +1,63 @@
 // src/components/clients/ClientForm.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import {
-  TextField,
-  Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Grid,
+    TextField,
+    Button,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Grid,
     Alert,
     CircularProgress,
-    SelectChangeEvent
+    Typography, Snackbar,
+    SelectChangeEvent,
 } from '@mui/material';
-import { Client } from '../../types/Client';
+import { Client, Interest } from '../../types/Client';
 import { useClientContext } from '../../context/ClientContext';
 import { useParams, useNavigate } from 'react-router-dom';
 
-
-interface ClientFormProps{
-  initialClient?:Client | null;
-}
-
-const ClientForm: React.FC<ClientFormProps> = () => {
-  const { createClient, updateClient, getClient } = useClientContext();
-  const { id } = useParams<{ id?: string }>(); // Get the ID from the URL
-  const navigate = useNavigate();
+const ClientForm: React.FC = () => {
+    const { createClient, updateClient, getClient, interests, fetchInterests } = useClientContext();
+    const { id } = useParams<{ id?: string }>();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const [clientData, setClientData] = useState<Client>({
-        usuarioId: '', // Important to initialize id
+
+    const [clientData, setClientData] = useState<Client>({
+        id: '',
         nombre: '',
         apellidos: '',
         identificacion: '',
-        celular: '',
+        telefonoCelular: '',
         direccion: '',
         fNacimiento: '',
         fAfiliacion: '',
-        sexo: 'Male',
-        resennaPersonal: '',
-        interesFK: [],
+        sexo: 'M',
+        resenaPersonal: '',
+        imagen: '', // Store base64 image data
+        interesFK: '',
     });
 
+
     useEffect(() => {
-        if (id) { // If there's an ID, we are editing
-            const fetchClientData = async () => {
-                setLoading(true);
+        const fetchData = async() => {
+
+            if (id) {
+              setLoading(true);
                 try {
-                    const client = await getClient(id); // Assuming getClient is defined in your context
+                    const client = await getClient(id);
                     if (client) {
-                        setClientData(client);
+                      // Format dates for the form fields
+                        const formattedClient = {
+                            ...client,
+                            fNacimiento: client.fNacimiento ? client.fNacimiento.split('T')[0] : '', // Extract date part
+                            fAfiliacion: client.fAfiliacion ? client.fAfiliacion.split('T')[0] : '',   // Extract date part
+                        };
+                      setClientData(formattedClient);
                     } else {
                         setError("Client not found");
                     }
@@ -60,197 +68,261 @@ const ClientForm: React.FC<ClientFormProps> = () => {
                 } finally{
                   setLoading(false);
                 }
-            };
-
-            fetchClientData();
+            }
+             try {
+                await fetchInterests(); // Fetch interests for the dropdown
+            } catch (fetchError) {
+                const err = fetchError as Error;
+                setError(err.message);  // Handle interest fetching error
+            }
         }
-    }, [id, getClient]);
+        fetchData();
+
+    }, [id, getClient, fetchInterests]);
 
 
+    const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
+        const { name, value } = event.target as { name: keyof Client; value: string };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
-    const { name, value } = event.target as { name: keyof Client; value: string };
-    setClientData({ ...clientData, [name]: value });
-  };
+        setClientData({ ...clientData, [name]: value });
+    };
 
-  const handleInterestChange = (event: SelectChangeEvent<string[]>) => {
-    const { value } = event.target as { value: string[] };
-    setClientData({ ...clientData, interesFK: value });
-  };
+    const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                // Set the base64 string to the imagen property
+                setClientData({ ...clientData, imagen: reader.result as string });
+            };
+            reader.readAsDataURL(file); // Read the file as a Data URL (base64)
+        }
+    };
+    const handleInterestChange = (event: SelectChangeEvent<string>) => {
+        const { value } = event.target as { value: string }; // Not multiple select
+        setClientData({ ...clientData, interesFK: value });
+    };
 
-  const handleGenderChange = (event: SelectChangeEvent<'Male' | 'Female'>) => {
-    const { name, value } = event.target;
-    setClientData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
+     const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+    const handleSubmit = async (event: FormEvent) => {
+        event.preventDefault();
         setLoading(true);
         setError(null);
-    try {
-      if(id){
-        await updateClient(id,clientData);
-      } else {
-        await createClient(clientData);
-      }
-      navigate('/clients'); // Redirect after successful submission
-    } catch (err) {
-        const error = err as Error;
-        setError(error.message);
-    } finally{
-      setLoading(false);
-    }
-  };
+
+        try {
+             // Format dates to 'YYYY-MM-DD' before sending
+            const formattedData = {
+                ...clientData,
+                fNacimiento: clientData.fNacimiento ? clientData.fNacimiento.split('T')[0] : '',
+                fAfiliacion:  clientData.fAfiliacion ? clientData.fAfiliacion.split('T')[0] : '',
+            };
+
+            if (id) {
+                await updateClient(id, formattedData);
+                 setSnackbarMessage('Client updated successfully.');
+
+            } else {
+                await createClient(formattedData);
+                 setSnackbarMessage('Client created successfully.');
+            }
+            setSnackbarOpen(true);
+            navigate('/clients');
+        } catch (err) {
+            const error = err as Error;
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (loading) return <CircularProgress />;
     if (error) return <Alert severity="error">{error}</Alert>;
 
-  return (
-    <form onSubmit={handleSubmit}>
-        {error && <Alert severity="error">{error}</Alert>}
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="First Name"
-            name="firstName"
-            value={clientData.nombre}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Last Name"
-            name="lastName"
-            value={clientData.apellidos}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Identification"
-            name="identification"
-            value={clientData.identificacion}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Mobile Phone"
-            name="mobilePhone"
-            value={clientData.celular}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Other Phone"
-            name="otherPhone"
-            value={clientData.otroTelefono || ''}  // Handle optional field
-            onChange={handleChange}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Address"
-            name="address"
-            value={clientData.direccion}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Birth Date"
-            name="birthDate"
-            type="date"
-            value={clientData.fNacimiento}
-            onChange={handleChange}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            fullWidth
-            label="Affiliation Date"
-            name="affiliationDate"
-            type="date"
-            value={clientData.fAfiliacion}
-            onChange={handleChange}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Gender</InputLabel>
-            <Select
-              name="gender"
-              value={clientData.sexo}
-              onChange={handleGenderChange}
-              required
-            >
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Personal Note"
-            name="personalNote"
-            multiline
-            rows={4}
-            value={clientData.resennaPersonal}
-            onChange={handleChange}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControl fullWidth>
-            <InputLabel>Interests</InputLabel>
-            <Select
-              multiple
-              name="interests"
-              value={clientData.interesFK}
-              onChange={handleInterestChange}
-              renderValue={(selected) => (selected as string[]).join(', ')}
-            >
-              {/* Replace with your actual interest options */}
-              <MenuItem value="Sports">Sports</MenuItem>
-              <MenuItem value="Music">Music</MenuItem>
-              <MenuItem value="Reading">Reading</MenuItem>
-              <MenuItem value="Technology">Technology</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-        {/* Image upload (optional) would go here */}
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary" disabled={loading}>
+    return (
+        <>
+        <Typography variant="h4" gutterBottom>
+            Client Management
+        </Typography>
+            {/* Image upload (optional) */}
+        <input
+            accept="image/*"
+            style={{ display: 'none' }}
+            id="raised-button-file"
+            type="file"
+            onChange={handleImageChange}
+        />
+        <label htmlFor="raised-button-file">
+            <Button variant="contained" component="span" sx={{ mb: 2 }}>
+                Upload Image
+            </Button>
+        </label>
+        {clientData.imagen && (  // Display the image if available
+            <img src={clientData.imagen} alt="Client" style={{ maxWidth: '200px', maxHeight: '200px' }} />
+        )}
+        <form onSubmit={handleSubmit}>
+            {error && <Alert severity="error">{error}</Alert>}
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Name"
+                        name="nombre"
+                        value={clientData.nombre}
+                        onChange={(event) => handleChange(event as ChangeEvent<HTMLInputElement | HTMLTextAreaElement>)}
+                        required
+                        inputProps={{ maxLength: 50 }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Last Name"
+                        name="apellidos"
+                        value={clientData.apellidos}
+                        onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 100 }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Identification"
+                        name="identificacion"
+                        value={clientData.identificacion}
+                        onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 20 }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Mobile Phone"
+                        name="telefonoCelular"
+                        value={clientData.telefonoCelular}
+                        onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 20 }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Other Phone"
+                        name="otroTelefono"
+                        value={clientData.otroTelefono || ''}
+                        onChange={handleChange}
+                        inputProps={{ maxLength: 20 }}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <TextField
+                        fullWidth
+                        label="Address"
+                        name="direccion"
+                        value={clientData.direccion}
+                        onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 200 }}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Birth Date"
+                        name="fNacimiento"
+                        type="date"
+                        value={clientData.fNacimiento}
+                        onChange={handleChange}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <TextField
+                        fullWidth
+                        label="Affiliation Date"
+                        name="fAfiliacion"
+                        type="date"
+                        value={clientData.fAfiliacion}
+                        onChange={handleChange}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth required>
+                        <InputLabel>Gender</InputLabel>
+                        <Select
+                            label="Gender"
+                            name="sexo"
+                            value={clientData.sexo}
+                            onChange={handleInterestChange}
+                        >
+                            <MenuItem value="M">Male</MenuItem>
+                            <MenuItem value="F">Female</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                    <TextField
+                        fullWidth
+                        label="Personal Note"
+                        name="resenaPersonal"
+                        multiline
+                        rows={4}
+                        value={clientData.resenaPersonal}
+                        onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 200 }}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <FormControl fullWidth required>
+                       <InputLabel>Interests</InputLabel>
+                        <Select
+                            label="Interests"
+                            name="interesFK"
+                            value={clientData.interesFK || ''}
+                            onChange={handleInterestChange}
+                            required
+                        >
+                            {interests.map((interest) => (
+                                <MenuItem key={interest.id} value={interest.id}>
+                                    {interest.descripcion}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                    <Button type="submit" variant="contained" color="primary" disabled={loading}>
                         {loading ? <CircularProgress size={24} /> : (id ? 'Update Client' : 'Create Client')}
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
-  );
+                    </Button>
+                    <Button variant="outlined" color="primary" onClick={() => navigate('/clients')} sx={{ ml: 2 }}>
+                        Back
+                    </Button>
+                </Grid>
+            </Grid>
+            </form>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                message={snackbarMessage}
+            />
+
+        </>
+    );
 };
 
 export default ClientForm;

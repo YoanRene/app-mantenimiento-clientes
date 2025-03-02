@@ -1,22 +1,36 @@
 // src/types/Client.ts
+
 export interface Client {
-    usuarioId: string;  // Use string for UUIDs or similar IDs
-    nombre: string;
-    apellidos: string;
+    id: string;
+    nombre: string;  // Changed from firstName
+    apellidos: string; // Changed from lastName
     identificacion: string;
-    celular: string;
-    otroTelefono?: string;  // Optional
+    telefonoCelular: string; // Changed from mobilePhone
+    otroTelefono?: string;
     direccion: string;
     fNacimiento: string; //  ISO 8601 format (YYYY-MM-DD)
     fAfiliacion: string; // ISO 8601 format (YYYY-MM-DD)
-    sexo: 'Male' | 'Female';
-    resennaPersonal: string;
-    imagen?: string;     // Optional: URL to the image
-    interesFK: string[]; // Array of selected interests
+    sexo: 'M' | 'F'; // Changed from Male/Female
+    resenaPersonal: string;
+    imagen?: string;     // Base64 image data
+    interesesId?: string; // ID of the selected interest
+    interesFK?: string; //for creating and updating
+    usuarioId?: string;
+  }
+  export interface ClientListClient {
+      id: string;
+      identificacion: string;
+      nombre: string;
+      apellidos: string;
   }
   
+  
   export interface ClientFilters {
-      usuarioId: string;
-      nombre?: string;
       identificacion?: string;
+      nombre?: string;
+  }
+  
+  export interface Interest {
+      id: string;
+      descripcion: string;
   }

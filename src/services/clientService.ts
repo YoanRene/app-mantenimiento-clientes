@@ -1,15 +1,18 @@
 // src/services/clientService.ts
 import axios from 'axios';
-import { Client, ClientFilters } from '../types/Client';
-import config_ from '../config';
+import { Client, ClientFilters, ClientListClient, Interest } from '../types/Client';
+import config from '../config';
 
-const API_BASE_URL = config_.API_BASE_URL; // Corrected base URL
+const API_BASE_URL = config.API_BASE_URL;
 
-// Function to get the authentication token
 const getAuthToken = () => {
     return localStorage.getItem('token');
 };
-// Add an Axios interceptor to include the Authorization header
+const getUserId = () => {
+    return localStorage.getItem('userId');
+}
+
+// Axios interceptor (already in place, but included for completeness)
 axios.interceptors.request.use(
     (config) => {
         const token = getAuthToken();
@@ -24,9 +27,18 @@ axios.interceptors.request.use(
 );
 
 const clientService = {
-    getAllClients: async (filters?: ClientFilters): Promise<Client[]> => {
+    getAllClients: async (filters?: ClientFilters): Promise<ClientListClient[]> => {
         try {
-            const response = await axios.post(`${API_BASE_URL}/api/Cliente/Listado`,  filters ); // Use correct endpoint
+            const userId = getUserId();
+            if(!userId){
+                throw new Error("User not authenticated");
+            }
+            const requestBody = {
+                identificacion: filters?.identificacion || "",
+                nombre: filters?.nombre || "",
+                usuarioId: userId
+            }
+            const response = await axios.post(`${API_BASE_URL}/api/Cliente/Listado`, requestBody);
             return response.data;
         } catch (error) {
             console.error("Error fetching clients:", error);
@@ -36,7 +48,7 @@ const clientService = {
 
     getClientById: async (id: string): Promise<Client> => {
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/Cliente/${id}`); // Use correct endpoint
+            const response = await axios.get(`${API_BASE_URL}/api/Cliente/Obtener/${id}`);
             return response.data;
         } catch (error) {
             console.error(`Error getting client with id ${id}:`, error);
@@ -44,23 +56,41 @@ const clientService = {
         }
     },
 
-      createClient: async (client: Client): Promise<Client> => {
+    createClient: async (client: Client): Promise<Client> => {
         try {
-            // Remove the manually added ID, let the server handle it
-            const { usuarioId, ...clientDataWithoutId } = client;
-            const response = await axios.post(`${API_BASE_URL}/api/Cliente`, clientDataWithoutId);
-            return response.data;
+            const userId = getUserId();
+            if (!userId) {
+              throw new Error("User not authenticated");
+            }
+            const requestBody = {
+                ...client,
+                usuarioId: userId,
+            };
+
+            const response = await axios.post(`${API_BASE_URL}/api/Cliente/Crear`, requestBody);
+            return response.data; // Assuming the API returns the created client
         } catch (error) {
             console.error("Error creating client:", error);
             throw error;
         }
     },
 
+
     updateClient: async (id: string, client: Client): Promise<Client> => {
-        try {
-             // Remove the manually added ID, let the server handle it
-            const { usuarioId: clientId, ...clientDataWithoutId } = client;
-            const response = await axios.put(`${API_BASE_URL}/api/Cliente/${id}`, clientDataWithoutId); // Use correct endpoint
+       try {
+            const userId = getUserId();
+            if (!userId) {
+              throw new Error("User not authenticated");
+            }
+
+            const requestBody = {
+                ...client,
+                id: id, // Ensure ID is included for updates
+                usuarioId: userId,
+
+            };
+
+            const response = await axios.post(`${API_BASE_URL}/api/Cliente/Actualizar`, requestBody);
             return response.data;
         } catch (error) {
             console.error(`Error updating client with id ${id}:`, error);
@@ -70,12 +100,22 @@ const clientService = {
 
     deleteClient: async (id: string): Promise<void> => {
         try {
-            await axios.delete(`${API_BASE_URL}/api/Cliente/${id}`); // Use correct endpoint
+            await axios.delete(`${API_BASE_URL}/api/Cliente/Eliminar/${id}`);
         } catch (error) {
             console.error(`Error deleting client with id ${id}:`, error);
             throw error;
         }
     },
+
+    getInterests: async(): Promise<Interest[]> => {
+        try{
+            const response = await axios.get(`${API_BASE_URL}/api/Intereses/Listado`);
+            return response.data;
+        } catch(error){
+            console.log('Error getting interests:', error);
+            throw error;
+        }
+    }
 };
 
 export default clientService;

@@ -63,7 +63,7 @@ const ClientDetail: React.FC = () => {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle1">Mobile Phone:</Typography>
-                    <Typography>{client.celular}</Typography>
+                    <Typography>{client.telefonoCelular}</Typography>
                 </Grid>
                 {client.otroTelefono && (  // Conditionally render otherPhone
                     <Grid item xs={12} sm={6}>
@@ -89,11 +89,11 @@ const ClientDetail: React.FC = () => {
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="subtitle1">Personal Note:</Typography>
-                    <Typography>{client.resennaPersonal}</Typography>
+                    <Typography>{client.resenaPersonal}</Typography>
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="subtitle1">Interests:</Typography>
-                    <Typography>{client.interesFK.join(', ')}</Typography>
+                    <Typography>{client.interesFK}</Typography>
                 </Grid>
             </Grid>
         </Paper>
