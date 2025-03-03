@@ -32,7 +32,6 @@ const Navbar: React.FC = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('userId');
         localStorage.removeItem('username');
-        localStorage.removeItem('rememberedUsername');
         window.location.href = '/login';
     };
 
