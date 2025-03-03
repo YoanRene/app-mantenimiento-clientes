@@ -15,7 +15,6 @@ export interface Client {
     imagen?: string;     // Base64 image data
     interesesId?: string; // ID of the selected interest
     interesFK?: string; //for creating and updating
-    usuarioId?: string;
   }
   export interface ClientListClient {
       id: string;

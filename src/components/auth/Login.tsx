@@ -59,12 +59,12 @@ const Login: React.FC = () => {
             }
 
 
-            navigate('/'); // Redirect to home page
+            window.location.replace('/'); // Redirect to home page
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 // Handle Axios-specific errors (e.g., network issues, 401 Unauthorized)
                 if (error.response) {
-                    setError(`Login failed: ${error.response.status} - ${error.response.data}`);
+                    setError(`Login failed: ${error.response.status} - Unauthorized`);
                 } else {
                     setError('Login failed: Network error');
                 }

@@ -26,7 +26,6 @@ const ClientForm: React.FC = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
 
-
     const [clientData, setClientData] = useState<Client>({
         id: '',
         nombre: '',
@@ -38,50 +37,67 @@ const ClientForm: React.FC = () => {
         fAfiliacion: '',
         sexo: 'M',
         resenaPersonal: '',
-        imagen: '', // Store base64 image data
+        imagen: '',
         interesFK: '',
     });
 
 
     useEffect(() => {
-        const fetchData = async() => {
-
-            if (id) {
-              setLoading(true);
-                try {
-                    const client = await getClient(id);
-                    if (client) {
-                      // Format dates for the form fields
-                        const formattedClient = {
-                            ...client,
-                            fNacimiento: client.fNacimiento ? client.fNacimiento.split('T')[0] : '', // Extract date part
-                            fAfiliacion: client.fAfiliacion ? client.fAfiliacion.split('T')[0] : '',   // Extract date part
-                        };
-                      setClientData(formattedClient);
-                    } else {
-                        setError("Client not found");
-                    }
-
-                } catch (error) {
-                  const err = error as Error;
-                    setError(err.message);
-                } finally{
-                  setLoading(false);
-                }
-            }
-             try {
-                await fetchInterests(); // Fetch interests for the dropdown
-            } catch (fetchError) {
-                const err = fetchError as Error;
-                setError(err.message);  // Handle interest fetching error
-            }
+      const fetchData = async () => {
+        // Fetch interests first (if not already loaded)
+        if (interests.length === 0) {
+          try {
+            await fetchInterests();
+          } catch (fetchError) {
+            setError((fetchError as Error).message);
+            return; // Exit if fetching interests fails
+          }
         }
-        fetchData();
 
-    }, [id, getClient, fetchInterests]);
+        if (id) {
+          setLoading(true);
+          try {
+            const client = await getClient(id);
+            if (client) {
+              // Find the matching interest
+              let selectedInterestId = '';
+              if (client.interesesId) {
+                const matchingInterest = interests.find(
+                  (interest) => interest.id === client.interesesId
+                );
+                if (matchingInterest) {
+                  selectedInterestId = matchingInterest.id;
+                }
+              }
 
+              const formattedClient = {
+                ...client,
+                fNacimiento: client.fNacimiento
+                  ? client.fNacimiento.split('T')[0]
+                  : '',
+                fAfiliacion: client.fAfiliacion
+                  ? client.fAfiliacion.split('T')[0]
+                  : '',
+                interesFK: selectedInterestId, // Set the interest description
+              };
+              setClientData(formattedClient);
+            } else {
+              setError('Client not found');
+            }
+          } catch (error) {
+            setError((error as Error).message);
+          } finally {
+            setLoading(false);
+          }
+        }
+      };
 
-    const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
+      fetchData();
+    }, [id, getClient, fetchInterests, interests]); // Add interests to dependency array
+
+    const handleChange = (
+        event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>
+    ) => {
         const { name, value } = event.target as { name: keyof Client; value: string };
 
         setClientData({ ...clientData, [name]: value });
@@ -92,18 +108,21 @@ const ClientForm: React.FC = () => {
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                // Set the base64 string to the imagen property
                 setClientData({ ...clientData, imagen: reader.result as string });
             };
-            reader.readAsDataURL(file); // Read the file as a Data URL (base64)
+            reader.readAsDataURL(file);
         }
     };
+
     const handleInterestChange = (event: SelectChangeEvent<string>) => {
-        const { value } = event.target as { value: string }; // Not multiple select
-        setClientData({ ...clientData, interesFK: value });
+      setClientData({ ...clientData, interesFK: event.target.value });
     };
 
-     const handleSnackbarClose = () => {
+    const handleGenderChange = (event: SelectChangeEvent<string>) => {
+        setClientData({ ...clientData, sexo: event.target.value as 'M' | 'F' });
+    };
+
+    const handleSnackbarClose = () => {
         setSnackbarOpen(false);
     };
 
@@ -113,7 +132,6 @@ const ClientForm: React.FC = () => {
         setError(null);
 
         try {
-             // Format dates to 'YYYY-MM-DD' before sending
             const formattedData = {
                 ...clientData,
                 fNacimiento: clientData.fNacimiento ? clientData.fNacimiento.split('T')[0] : '',
@@ -159,7 +177,7 @@ const ClientForm: React.FC = () => {
                 Upload Image
             </Button>
         </label>
-        {clientData.imagen && (  // Display the image if available
+        {clientData.imagen && (
             <img src={clientData.imagen} alt="Client" style={{ maxWidth: '200px', maxHeight: '200px' }} />
         )}
         <form onSubmit={handleSubmit}>
@@ -265,7 +283,7 @@ const ClientForm: React.FC = () => {
                             label="Gender"
                             name="sexo"
                             value={clientData.sexo}
-                            onChange={handleInterestChange}
+                            onChange={handleGenderChange}
                         >
                             <MenuItem value="M">Male</MenuItem>
                             <MenuItem value="F">Female</MenuItem>

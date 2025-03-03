@@ -39,7 +39,7 @@ const Navbar: React.FC = () => {
     const drawer = (
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
             <Typography variant="h6" sx={{ my: 2 }}>
-                Client Management
+                I want to grow with Innovasoft
             </Typography>
             <Divider />
             <List>
@@ -90,7 +90,7 @@ const Navbar: React.FC = () => {
             <Toolbar>
                 {/* Title (aligned to the left) */}
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' } }}>
-                    Client Management
+                    I want to grow with Innovasoft
                 </Typography>
 
                 {/* Desktop Menu (Hidden on mobile, aligned to the left) */}

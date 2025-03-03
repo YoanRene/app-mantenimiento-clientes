@@ -64,6 +64,8 @@ const clientService = {
             }
             const requestBody = {
                 ...client,
+                celular: client.telefonoCelular,
+                resennaPersonal: client.resenaPersonal,
                 usuarioId: userId,
             };
 
@@ -85,9 +87,10 @@ const clientService = {
 
             const requestBody = {
                 ...client,
+                celular: client.telefonoCelular,
+                resennaPersonal: client.resenaPersonal,
                 id: id, // Ensure ID is included for updates
                 usuarioId: userId,
-
             };
 
             const response = await axios.post(`${API_BASE_URL}/api/Cliente/Actualizar`, requestBody);
